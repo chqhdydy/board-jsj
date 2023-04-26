@@ -15,4 +15,18 @@ public class HomeController {
     public String goHome() {
         return "/main/index";
     }
+
+    /*
+    @GetMapping("/buttons")
+    public String gobuttons() {
+        return "/main/buttons";
+    }
+
+    @GetMapping("/cards")
+    public String gocards() {
+        return "/main/cards";
+    }
+    */
+
 }
+
