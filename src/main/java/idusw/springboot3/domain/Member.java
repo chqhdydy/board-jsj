@@ -2,6 +2,9 @@ package idusw.springboot3.domain;
 
 import lombok.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Builder
 @Getter
 @Setter
@@ -16,4 +19,6 @@ public class Member {
     private String email;
     private String name;
     private String pw;
+    private LocalDateTime regDate;
+    private LocalDateTime modDate;
 }

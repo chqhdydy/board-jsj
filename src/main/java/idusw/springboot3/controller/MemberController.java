@@ -10,6 +10,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Controller
 @RequestMapping("/members")
 public class MemberController {
@@ -19,6 +22,18 @@ public class MemberController {
         this.memberService = memberService;
     }
     HttpSession session = null;
+
+    @GetMapping("/list")
+    public String getMember(Model model) {
+        List<Member> result = null;
+        if((result = memberService.readList()) != null ) {
+            model.addAttribute("attr", result);
+            return "/members/list2";
+        }else{
+            return "/main/404";
+        }
+    }
+
 
     @GetMapping("/login")
     public String getLoginform(Model model)

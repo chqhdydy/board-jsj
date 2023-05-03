@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.internal.matchers.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 class Borad3BApplicationTests {
@@ -32,6 +33,7 @@ class Borad3BApplicationTests {
             System.out.println("등록 실패");
     }
     @Test
+    @Transactional // could not initialize proxy
     void readMember(){ // seq를 사용해야함
         Member member = Member.builder()
                 .seq(1L)
