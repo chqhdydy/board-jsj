@@ -24,14 +24,25 @@ public class MemberController {
     HttpSession session = null;
 
     @GetMapping("/list")
-    public String getMember(Model model) {
+    public String ListMember2(Model model) {
         List<Member> result = null;
         if((result = memberService.readList()) != null ) {
             model.addAttribute("list", result);
             return "/members/list2";
-        }else{
+        }else
             return "/main/404";
+
+    }
+
+    @GetMapping(value = {"", "/"})
+    public String listMember(Model model) {
+        List<Member> result = null;
+        if((result = memberService.readList()) != null) {
+            model.addAttribute("list", result);
+            return "/members/list";
         }
+        else
+            return "/main/404";
     }
 
 
