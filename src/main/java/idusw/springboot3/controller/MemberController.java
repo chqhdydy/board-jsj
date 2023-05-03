@@ -27,7 +27,7 @@ public class MemberController {
     public String getMember(Model model) {
         List<Member> result = null;
         if((result = memberService.readList()) != null ) {
-            model.addAttribute("attr", result);
+            model.addAttribute("list", result);
             return "/members/list2";
         }else{
             return "/main/404";
