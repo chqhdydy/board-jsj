@@ -1,16 +1,15 @@
 package idusw.springboot3.controller;
 
 import idusw.springboot3.domain.Member;
-import idusw.springboot3.domain.Memo;
 import idusw.springboot3.service.MemberService;
-import jakarta.servlet.http.HttpServlet;
+import idusw.springboot3.domain.Member;
+import idusw.springboot3.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -24,32 +23,18 @@ public class MemberController {
     HttpSession session = null;
 
     @GetMapping("/list")
-    public String ListMember2(Model model) {
-        List<Member> result = null;
-        if((result = memberService.readList()) != null ) {
-            model.addAttribute("list", result);
-            return "/members/list2";
-        }else
-            return "/main/404";
-
-    }
-
-    @GetMapping(value = {"", "/"})
-    public String listMember(Model model) {
+    public String listMember2(Model model) {
         List<Member> result = null;
         if((result = memberService.readList()) != null) {
             model.addAttribute("list", result);
-            return "/members/list";
+            return "/members/list2"; // view : template engine - thymeleaf .html
         }
         else
-            return "/main/404";
+            return "/errors/404";
     }
-
-
-    @GetMapping("/login")
-    public String getLoginform(Model model)
-    {
-        model.addAttribute("member", Member.builder().build());
+    @GetMapping("/login-form")
+    public String getLoginform(Model model) {
+        model.addAttribute("member", Member.builder().build()); // email / pw 전달을 위한 객체
         return "/members/login"; // view : template engine - thymeleaf .html
     }
     @PostMapping("/login")
@@ -58,34 +43,40 @@ public class MemberController {
         if((result = memberService.login(member)) != null ) { // 정상적으로 레코드의 변화가 발생하는 경우 영향받는 레코드 수를 반환
             session = request.getSession();
             session.setAttribute("mb", result);
-            System.out.println("login session");
             return "redirect:/";
         }
         else
             return "/main/error";
-
     }
-
     @GetMapping("/logout")
     public String logoutMember() {
-        session.invalidate(); //세션을 지움
+        session.invalidate();
         return "redirect:/";
     }
-
-    @GetMapping("/register")
+    @GetMapping(value = {"", "/"})
+    public String listMember(Model model) {
+        List<Member> result = null;
+        if((result = memberService.readList()) != null) {
+            model.addAttribute("list", result);
+            return "/members/list";
+        }
+        else
+            return "/errors/404";
+    }
+    @GetMapping("/register-form")
     public String getRegisterForm(Model model) { // form 요청 -> view (template engine)
         model.addAttribute("member", Member.builder().build());
         return "/members/register";
     }
-    @PostMapping("/register")
+    @PostMapping("/")
     public String createMember(@ModelAttribute("member") Member member, Model model) { // 등록 처리 -> service -> repository -> service -> controller
         if(memberService.create(member) > 0 ) // 정상적으로 레코드의 변화가 발생하는 경우 영향받는 레코드 수를 반환
             return "redirect:/";
         else
-            return "/main/error";
+            return "/errors/404";
     }
     @GetMapping("/{seq}")
-    public String getMember(@PathVariable("seq") Long seq, Model model){
+    public String getMember(@PathVariable("seq") Long seq, Model model) {
         Member result = new Member(); // 반환
         Member m = new Member(); // 매개변수로 전달
         m.setSeq(seq);
@@ -95,17 +86,24 @@ public class MemberController {
         model.addAttribute("member", result);
         return "/members/detail";
     }
-    @GetMapping("/update")
-    public String getUpdateform() { // form 요청 -> view (template engine)
-        return "/members/update";
+
+    @PutMapping("/{seq}")
+    public String updateMember(@ModelAttribute("member") Member member, Model model) { // 수정 처리 -> service -> repository -> service -> controller
+        if(memberService.update(member) > 0 ) {
+            session.setAttribute("mb", member);
+            return "redirect:/";
+        }
+        else
+            return "/errors/404";
     }
-    @PutMapping("/update")
-    public String updateMember() { // 등록 처리 -> service -> repository -> service -> controller
-        return "redirect:/";
-    }
-    @DeleteMapping("/delete")
-    public String deleteMember() { // 등록 처리 -> service -> repository -> service -> controller
-        return "redirect:/";
+    @DeleteMapping("/{seq}")
+    public String deleteMember(@ModelAttribute("member") Member member) { // 삭제 처리 -> service -> repository -> service -> controller
+        if(memberService.delete(member) > 0) {
+            session.invalidate();
+            return "redirect:/";
+        }
+        else
+            return "/errors/404";
     }
     @GetMapping("/forgot") // 조회 read
     public String getForgotform() { // 분실 비밀번호 처리 요청 -> view
