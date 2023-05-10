@@ -1,6 +1,9 @@
 package idusw.springboot3.controller;
 
 import idusw.springboot3.domain.Member;
+import idusw.springboot3.domain.PageRequestDTO;
+import idusw.springboot3.domain.PageResultDTO;
+import idusw.springboot3.entity.MemberEntity;
 import idusw.springboot3.service.MemberService;
 import idusw.springboot3.domain.Member;
 import idusw.springboot3.service.MemberService;
@@ -22,21 +25,28 @@ public class MemberController {
     }
     HttpSession session = null;
 
-    @GetMapping("/list")
-    public String listMember2(Model model) {
+    @GetMapping("/list/{pn}/{size}")
+    public String listMemberPagenation(@PathVariable("pn") int pn,@PathVariable("size") int size ,Model model) {
+        PageRequestDTO pageRequestDTO = PageRequestDTO.builder().page(pn).size(size).build();
+        PageResultDTO<Member, MemberEntity> resultDTO = memberService.getList(pageRequestDTO);
+
         List<Member> result = null;
-        if((result = memberService.readList()) != null) {
-            model.addAttribute("list", result);
-            return "/members/list2"; // view : template engine - thymeleaf .html
+        if(resultDTO != null) {
+            model.addAttribute("list", resultDTO.getDtoList()); // record
+            model.addAttribute("result", resultDTO); // Page number list
+
+            return "/members/list"; // view : template engine - thymeleaf .html
         }
         else
             return "/errors/404";
     }
+
     @GetMapping("/login-form")
     public String getLoginform(Model model) {
         model.addAttribute("member", Member.builder().build()); // email / pw 전달을 위한 객체
         return "/members/login"; // view : template engine - thymeleaf .html
     }
+
     @PostMapping("/login")
     public String loginMember(@ModelAttribute("member") Member member, HttpServletRequest request) { // 로그인 처리 -> service -> repository -> service -> controller
         Member result = null;
@@ -48,11 +58,13 @@ public class MemberController {
         else
             return "/main/error";
     }
+
     @GetMapping("/logout")
     public String logoutMember() {
         session.invalidate();
         return "redirect:/";
     }
+
     @GetMapping(value = {"", "/"})
     public String listMember(Model model) {
         List<Member> result = null;
@@ -63,11 +75,13 @@ public class MemberController {
         else
             return "/errors/404";
     }
+
     @GetMapping("/register-form")
     public String getRegisterForm(Model model) { // form 요청 -> view (template engine)
         model.addAttribute("member", Member.builder().build());
         return "/members/register";
     }
+
     @PostMapping("/")
     public String createMember(@ModelAttribute("member") Member member, Model model) { // 등록 처리 -> service -> repository -> service -> controller
         if(memberService.create(member) > 0 ) // 정상적으로 레코드의 변화가 발생하는 경우 영향받는 레코드 수를 반환
@@ -75,6 +89,7 @@ public class MemberController {
         else
             return "/errors/404";
     }
+
     @GetMapping("/{seq}")
     public String getMember(@PathVariable("seq") Long seq, Model model) {
         Member result = new Member(); // 반환
@@ -109,6 +124,7 @@ public class MemberController {
     public String getForgotform() { // 분실 비밀번호 처리 요청 -> view
         return "/members/forgot-password"; // view : template engine - thymeleaf .html
     }
+
     @PostMapping("/forgot") // create vs  update -> @PutMapping, delete -> @DeleteMapping
     public String forgotMemberPassword() { // 비밀번호(갱신) -> service -> repository -> service -> controller
         return "redirect:/"; // 루트로 이동

@@ -1,16 +1,24 @@
 package idusw.springboot3.service;
 
 import idusw.springboot3.domain.Member;
-import idusw.springboot3.domain.Memo;
+import idusw.springboot3.domain.PageRequestDTO;
+import idusw.springboot3.domain.PageResultDTO;
 import idusw.springboot3.entity.MemberEntity;
-import idusw.springboot3.entity.MemoEntity;
 import idusw.springboot3.repository.MemberRepository;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+
 
 @Service
+@Qualifier("1")
+
 public class MemberServiceImpl implements MemberService {
     // DI - IoC (Inversion of Control : 제어의 역전) 방법 중 하나, DI, DL ...
     //
@@ -81,19 +89,19 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public int delete(Member m) {
-            MemberEntity entity = MemberEntity.builder()
-                    .seq(m.getSeq())
-                    .build();
-            memberRepository.deleteById(entity.getSeq());
-            return 1;
-    } // 구현체
+        MemberEntity entity = MemberEntity.builder()
+                .seq(m.getSeq())
+                .build();
+        memberRepository.deleteById(entity.getSeq());
+        return 1;
+    }
 
     @Override
-    public Member login(Member m){
-        memberRepository.getByEmailPw(m.getEmail(), m.getPw());
+    public Member login(Member m) {
         MemberEntity e = memberRepository.getByEmailPw(m.getEmail(), m.getPw()); // JpaRepository 구현체의 메소드
+        System.out.println("login : " + e);
         Member result = null; // DTO (Data Transfer Object) : Controller - Service or Controller - View
-        if(e !=null){
+        if(e != null) {
             result = new Member();
             result.setSeq(e.getSeq());
             result.setEmail(e.getEmail());
@@ -102,4 +110,13 @@ public class MemberServiceImpl implements MemberService {
         return result;
     }
 
+    @Override
+    public PageResultDTO<Member, MemberEntity> getList(PageRequestDTO requestDTO) {
+        Pageable pageable = requestDTO.getPageable(Sort.by("seq").ascending());
+
+        Page<MemberEntity> result = memberRepository.findAll(pageable);
+        Function<MemberEntity, Member> fn = (entity -> entityToDto(entity));
+
+        return new PageResultDTO<>(result, fn);
+    }
 }
